@@ -11,4 +11,9 @@ public class PlayerInputHandler : MonoBehaviour
 
         _playerMover.SetDirection(input);
     }
+
+    public void OnRun(InputAction.CallbackContext context)
+    {
+        _playerMover.SetRunning(context.ReadValueAsButton());
+    }
 }

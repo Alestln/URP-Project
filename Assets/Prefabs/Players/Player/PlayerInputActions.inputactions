@@ -17,7 +17,7 @@
                 {
                     "name": "Run",
                     "type": "Button",
-                    "id": "87e45edb-cbeb-46f8-bc25-116c814bccde",
+                    "id": "5b902fec-d766-4e42-9e1c-b10329850a80",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -137,7 +137,7 @@
                 },
                 {
                     "name": "",
-                    "id": "416e4362-0389-46b7-aa67-56cd5cd19133",
+                    "id": "313eb386-ba86-4acf-83f6-25c7b70b887b",
                     "path": "<Keyboard>/leftShift",
                     "interactions": "",
                     "processors": "",

@@ -151,8 +151,20 @@ MonoBehaviour:
     m_ActionId: 6cafb8b9-5557-4550-b042-074631d2cc97
     m_ActionName: Player/Move[/Keyboard/w,/Keyboard/s,/Keyboard/a,/Keyboard/d,/Keyboard/shift]
   - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 87e45edb-cbeb-46f8-bc25-116c814bccde
+      m_Calls:
+      - m_Target: {fileID: 3232611695443207160}
+        m_TargetAssemblyTypeName: PlayerInputHandler, Assembly-CSharp
+        m_MethodName: OnRun
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 5b902fec-d766-4e42-9e1c-b10329850a80
     m_ActionName: Player/Run[/Keyboard/leftShift]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
@@ -184,7 +196,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58a9504a147578349a2a61c4a8463522, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _speed: 5
+  _walkSpeed: 5
+  _runSpeed: 8
 --- !u!1 &6164913365180694799
 GameObject:
   m_ObjectHideFlags: 0
@@ -195,6 +208,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8529433762286614320}
   - component: {fileID: 4943748752523147241}
+  - component: {fileID: 4406480812901948467}
   m_Layer: 6
   m_Name: Visuals
   m_TagString: Untagged
@@ -258,7 +272,7 @@ SpriteRenderer:
   m_SortingLayerID: -1411748395
   m_SortingLayer: 2
   m_SortingOrder: 0
-  m_Sprite: {fileID: -1739567792, guid: 656a9a10a7ae45f4baea2ea4456a3d1f, type: 3}
+  m_Sprite: {fileID: -395507688, guid: b68268e61e2c24b4399650e57dc5eadd, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -269,3 +283,24 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!95 &4406480812901948467
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6164913365180694799}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: dfe45289bd221df4e93d4f8a4e816215, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
