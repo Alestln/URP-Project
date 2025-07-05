@@ -10,10 +10,10 @@ public class PlayerMover : MonoBehaviour
     private Rigidbody2D _rigidBody;
     private Vector2 _direction;
     private bool _isRunning;
+    private bool _isMoving;
 
-    /*public float CurrentSpeed => _rigidBody.velocity.magnitude;
     public Vector2 MoveDirection => _direction;
-    public bool IsRunning => _isRunning;*/
+    public float CurrentSpeed => _rigidBody.velocity.magnitude;
 
     private void Awake()
     {
@@ -27,7 +27,15 @@ public class PlayerMover : MonoBehaviour
 
     public void SetDirection(Vector2 direction)
     {
-        _direction = direction;
+        if (direction == Vector2.zero)
+        {
+            _isMoving = false;
+        }
+        else
+        {
+            _direction = direction;
+            _isMoving = true;
+        }
     }
 
     public void SetRunning(bool isRunning)
@@ -37,6 +45,12 @@ public class PlayerMover : MonoBehaviour
 
     private void Move()
     {
+        if (!_isMoving)
+        {
+            _rigidBody.velocity = Vector2.zero;
+            return;
+        }
+
         float targetSpeed = _isRunning ? _runSpeed : _walkSpeed;
         _rigidBody.velocity = _direction * targetSpeed;
     }
