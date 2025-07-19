@@ -8,12 +8,12 @@ TagManager:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - Obstacles
+  - Ground
   - Water
   - UI
   - Player
-  - 
-  - 
+  - Wall
+  - Interier
   - 
   - 
   - 
