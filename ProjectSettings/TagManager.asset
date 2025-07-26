@@ -14,7 +14,7 @@ TagManager:
   - Player
   - Wall
   - Interier
-  - 
+  - Enemy
   - 
   - 
   - 
@@ -49,4 +49,7 @@ TagManager:
     locked: 0
   - name: Player
     uniqueID: 2883218901
+    locked: 0
+  - name: Enemy
+    uniqueID: 2961048811
     locked: 0
