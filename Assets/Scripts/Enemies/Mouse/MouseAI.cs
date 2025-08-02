@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class MouseAI : MonoBehaviour
@@ -9,17 +10,24 @@ public class MouseAI : MonoBehaviour
     }
 
     [Header("AI Logic")]
-    [SerializeField] private float _chaseRadius = 3f; // Радиус преследования
-    [SerializeField] private Transform _target; // Цель преследования (игрок)
+    [SerializeField] private float _patrolPointThreshold = 0.5f; // Порог расстояния до точки патрулирования
+    [SerializeField] private Transform[] _patrolPoints; // Точки патрулирования
 
     [Header("Component References")]
     [SerializeField] private MouseMover _mover; // Компонент для движения мыши
     [SerializeField] private MouseAnimator _animator; // Компонент для анимации мыши
+    [SerializeField] private FieldOfView _fieldOfView; // Компонент для поля зрения мыши (если используется)
 
     private MouseState _currentState;
+    private int _currentPatrolIndex = 0; // Индекс текущей точки патрулирования
 
     private void Start()
     {
+        if (_patrolPoints.Length > 0)
+        {
+            transform.position = _patrolPoints[0].position; // Установка начальной позиции на первую точку патрулирования
+        }
+
         _currentState = MouseState.Patrol;
     }
 
@@ -42,19 +50,17 @@ public class MouseAI : MonoBehaviour
 
     private void RunFSM()
     {
-        float distanceToTarget = Vector2.Distance(transform.position, _target.position);
-
         switch(_currentState)
         {
             case MouseState.Patrol:
-                if (distanceToTarget < _chaseRadius)
+                if (_fieldOfView.IsTargetVisible())
                 {
                     SwitchState(MouseState.Chase);
                 }
-                // Здесь можно добавить логику патрулирования, например, движение по точкам
+                ExecutePatrolState();
                 break;
             case MouseState.Chase:
-                if (distanceToTarget > _chaseRadius)
+                if (!_fieldOfView.IsTargetVisible())
                 {
                     SwitchState(MouseState.Patrol);
                 }
@@ -63,17 +69,33 @@ public class MouseAI : MonoBehaviour
         }
     }
 
-    private void ExecuteChaseState()
+    private void ExecutePatrolState()
     {
-        Vector2 direction = (_target.position - transform.position).normalized;
-        _mover.SetMoveDirection(direction);
-        _animator.SetDirection(direction);
+        Vector2 direction = Vector2.zero;
+
+        if (_patrolPoints.Length > 1)
+        {
+            Transform targetPoint = _patrolPoints[_currentPatrolIndex];
+
+            if (Vector2.Distance(transform.position, targetPoint.position) < _patrolPointThreshold)
+            {
+                _currentPatrolIndex = (_currentPatrolIndex + 1) % _patrolPoints.Length; // Переход к следующей точке патрулирования
+            }
+
+            direction = (targetPoint.position - transform.position).normalized;
+        }
+
+        if (direction != Vector2.zero)
+        {
+            _mover.SetMoveDirection(direction);
+            _animator.SetDirection(direction);
+        }
     }
 
-    private void OnDrawGizmosSelected()
+    private void ExecuteChaseState()
     {
-        // Отображение радиуса преследования в редакторе
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, _chaseRadius);
+        Vector2 direction = (_fieldOfView.Target.position - transform.position).normalized;
+        _mover.SetMoveDirection(direction);
+        _animator.SetDirection(direction);
     }
 }
