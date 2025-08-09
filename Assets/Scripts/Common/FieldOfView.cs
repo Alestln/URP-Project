@@ -12,7 +12,17 @@ public class FieldOfView : MonoBehaviour
     [SerializeField] private Transform _target;
     [SerializeField] private LayerMask _obstacleLayerMask;
 
+    private Vector2 _forwardDirection = Vector2.up;
+
     public Transform Target => _target;
+
+    public void SetDirection(Vector2 direction)
+    {
+        if (direction != Vector2.zero)
+        {
+            _forwardDirection = direction.normalized;
+        }
+    }
 
     public bool IsTargetVisible()
     {
@@ -30,7 +40,7 @@ public class FieldOfView : MonoBehaviour
 
         Vector2 directionToTarget = (_target.position - transform.position).normalized;
 
-        if (Vector2.Angle(transform.up, directionToTarget) > _viewAngle / 2)
+        if (Vector2.Angle(_forwardDirection, directionToTarget) > _viewAngle / 2)
         {
             return false;
         }
@@ -44,4 +54,32 @@ public class FieldOfView : MonoBehaviour
 
         return true;
     }
+
+#if UNITY_EDITOR
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.white;
+        UnityEditor.Handles.DrawWireDisc(transform.position, Vector3.forward, _viewRadius);
+
+        Vector3 viewAngleA = DirectionFromAngle(-_viewAngle / 2, _forwardDirection);
+        Vector3 viewAngleB = DirectionFromAngle(_viewAngle / 2, _forwardDirection);
+
+        Gizmos.DrawLine(transform.position, transform.position + viewAngleA * _viewRadius);
+        Gizmos.DrawLine(transform.position, transform.position + viewAngleB * _viewRadius);
+
+        if (IsTargetVisible())
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawLine(transform.position, _target.position);
+        }
+    }
+
+    private Vector3 DirectionFromAngle(float angleInDegrees, Vector2 forwardDirection)
+    {
+        float baseAngle = Mathf.Atan2(forwardDirection.y, forwardDirection.x) * Mathf.Rad2Deg;
+        float totalAngle = baseAngle + angleInDegrees;
+
+        return new Vector3(Mathf.Cos(totalAngle * Mathf.Deg2Rad), Mathf.Sin(totalAngle * Mathf.Deg2Rad));
+    }
+#endif
 }

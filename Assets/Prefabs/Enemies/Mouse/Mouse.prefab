@@ -124,8 +124,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e500487fa571fdc4db24a0714fe4fd57, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _chaseRadius: 3
-  _target: {fileID: 0}
   _patrolPointThreshold: 0.5
   _patrolPoints: []
   _mover: {fileID: 2556957313884155026}
@@ -175,9 +173,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d29416909585d449b84ffae7beb8cac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _viewRadius: 5
+  _viewRadius: 3
   _viewAngle: 90
-  target: {fileID: 8686629682861357316}
+  _target: {fileID: 0}
   _obstacleLayerMask:
     serializedVersion: 2
     m_Bits: 64

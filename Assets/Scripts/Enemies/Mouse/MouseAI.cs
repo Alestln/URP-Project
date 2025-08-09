@@ -11,7 +11,7 @@ public class MouseAI : MonoBehaviour
 
     [Header("AI Logic")]
     [SerializeField] private float _patrolPointThreshold = 0.5f; // ѕорог рассто€ни€ до точки патрулировани€
-    [SerializeField] private Transform[] _patrolPoints; // “очки патрулировани€
+    [SerializeField] private PatrolPath _patrolPath; // ѕуть патрулировани€ мыши
 
     [Header("Component References")]
     [SerializeField] private MouseMover _mover; //  омпонент дл€ движени€ мыши
@@ -23,9 +23,9 @@ public class MouseAI : MonoBehaviour
 
     private void Start()
     {
-        if (_patrolPoints.Length > 0)
+        if (_patrolPath.Length > 0)
         {
-            transform.position = _patrolPoints[0].position; // ”становка начальной позиции на первую точку патрулировани€
+            transform.position = _patrolPath.GetPointTransform(_currentPatrolIndex).position; // ”становка начальной позиции на первую точку патрулировани€
         }
 
         _currentState = MouseState.Patrol;
@@ -73,13 +73,13 @@ public class MouseAI : MonoBehaviour
     {
         Vector2 direction = Vector2.zero;
 
-        if (_patrolPoints.Length > 1)
+        if (_patrolPath.Length > 1)
         {
-            Transform targetPoint = _patrolPoints[_currentPatrolIndex];
+            Transform targetPoint = _patrolPath.GetPointTransform(_currentPatrolIndex); // ѕолучение текущей точки патрулировани€
 
             if (Vector2.Distance(transform.position, targetPoint.position) < _patrolPointThreshold)
             {
-                _currentPatrolIndex = (_currentPatrolIndex + 1) % _patrolPoints.Length; // ѕереход к следующей точке патрулировани€
+                _currentPatrolIndex = (_currentPatrolIndex + 1) % _patrolPath.Length; // ѕереход к следующей точке патрулировани€
             }
 
             direction = (targetPoint.position - transform.position).normalized;
@@ -89,6 +89,7 @@ public class MouseAI : MonoBehaviour
         {
             _mover.SetMoveDirection(direction);
             _animator.SetDirection(direction);
+            _fieldOfView.SetDirection(direction);
         }
     }
 
