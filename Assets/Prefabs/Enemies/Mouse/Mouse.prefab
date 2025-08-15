@@ -45,7 +45,7 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2077703434981502009}
-  m_BodyType: 0
+  m_BodyType: 1
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
@@ -125,7 +125,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _patrolPointThreshold: 0.5
-  _patrolPoints: []
+  _patrolPath: {fileID: 0}
+  _startPointIndex: 0
   _mover: {fileID: 2556957313884155026}
   _animator: {fileID: 109514597230140168}
   _fieldOfView: {fileID: 5809255512284620060}

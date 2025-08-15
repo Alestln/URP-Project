@@ -10,10 +10,6 @@ public static class MouseAnimationParams
 [RequireComponent(typeof(Animator))]
 public class MouseAnimator : MonoBehaviour
 {
-    [Header("Component References")]
-    [Tooltip("Reference to the MouseMover component to get movement direction and speed.")]
-    [SerializeField] private MouseMover _mouseMover;
-
     private Animator _animator;
 
     private int SpeedHash = Animator.StringToHash(MouseAnimationParams.Speed);
@@ -23,18 +19,6 @@ public class MouseAnimator : MonoBehaviour
     private void Awake()
     {
         _animator = GetComponent<Animator>();
-    }
-
-    private void Update()
-    {
-        UpdateAnimationParameters();
-    }
-
-    private void UpdateAnimationParameters()
-    {
-        float speed = _mouseMover.CurrentSpeed;
-
-        _animator.SetFloat(SpeedHash, speed);
     }
 
     public void SetDirection(Vector2 direction)

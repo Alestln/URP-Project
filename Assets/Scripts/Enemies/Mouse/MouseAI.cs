@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 
+[RequireComponent(typeof(MouseMover), typeof(MouseAnimator))]
 public class MouseAI : MonoBehaviour
 {
     public enum MouseState
@@ -11,13 +12,14 @@ public class MouseAI : MonoBehaviour
 
     [Header("AI Logic")]
     [SerializeField] private float _patrolPointThreshold = 0.5f; // Порог расстояния до точки патрулирования
-    [SerializeField] private PatrolPath _patrolPath; // Путь патрулирования мыши
     [SerializeField] private int _startPointIndex = 0; // Индекс начальной точки патрулирования, если используется путь патрулирования
+    [SerializeField] private float _stoppingDistance = 0.1f; // Расстояние, на котором мышь останавливается от цели при преследовании
 
     [Header("Component References")]
     [SerializeField] private MouseMover _mover; // Компонент для движения мыши
     [SerializeField] private MouseAnimator _animator; // Компонент для анимации мыши
-    [SerializeField] private FieldOfView _fieldOfView; // Компонент для поля зрения мыши (если используется)
+    [SerializeField] private FieldOfView _fieldOfView; // Компонент для поля зрения мыши
+    [SerializeField] private PatrolPath _patrolPath; // Путь патрулирования мыши
 
     private MouseState _currentState;
     private int _currentPatrolIndex; // Индекс текущей точки патрулирования
@@ -113,8 +115,24 @@ public class MouseAI : MonoBehaviour
 
     private void ExecuteChaseState()
     {
+        if (_fieldOfView.Target is null)
+        {
+            return; // Если цель не задана, ничего не делаем
+        }
+
+        float distanceToTarget = Vector2.Distance(transform.position, _fieldOfView.Target.position);
+        print(distanceToTarget);
         Vector2 direction = (_fieldOfView.Target.position - transform.position).normalized;
-        _mover.SetMoveDirection(direction);
+
+        if (distanceToTarget > _stoppingDistance)
+        {
+            _mover.SetMoveDirection(direction);
+        }
+        else
+        {
+            _mover.SetMoveDirection(Vector2.zero);
+        }
+
         _animator.SetDirection(direction);
     }
 }
