@@ -13,7 +13,7 @@ public class MouseAI : MonoBehaviour
     [Header("AI Logic")]
     [SerializeField] private float _patrolPointThreshold = 0.5f; // ѕорог рассто€ни€ до точки патрулировани€
     [SerializeField] private int _startPointIndex = 0; // »ндекс начальной точки патрулировани€, если используетс€ путь патрулировани€
-    [SerializeField] private float _stoppingDistance = 0.1f; // –ассто€ние, на котором мышь останавливаетс€ от цели при преследовании
+    [SerializeField] private float _attackDistance = 1.3f; // –ассто€ние, на котором мышь останавливаетс€ от цели при преследовании
 
     [Header("Component References")]
     [SerializeField] private MouseMover _mover; //  омпонент дл€ движени€ мыши
@@ -121,10 +121,9 @@ public class MouseAI : MonoBehaviour
         }
 
         float distanceToTarget = Vector2.Distance(transform.position, _fieldOfView.Target.position);
-        print(distanceToTarget);
         Vector2 direction = (_fieldOfView.Target.position - transform.position).normalized;
 
-        if (distanceToTarget > _stoppingDistance)
+        if (distanceToTarget > _attackDistance)
         {
             _mover.SetMoveDirection(direction);
         }

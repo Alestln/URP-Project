@@ -12,7 +12,6 @@ public class MouseAnimator : MonoBehaviour
 {
     private Animator _animator;
 
-    private int SpeedHash = Animator.StringToHash(MouseAnimationParams.Speed);
     private int DirectionXHash = Animator.StringToHash(MouseAnimationParams.DirectionX);
     private int DirectionYHash = Animator.StringToHash(MouseAnimationParams.DirectionY);
 
