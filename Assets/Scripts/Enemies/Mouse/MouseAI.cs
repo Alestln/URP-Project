@@ -12,6 +12,7 @@ public class MouseAI : MonoBehaviour
     [Header("AI Logic")]
     [SerializeField] private float _patrolPointThreshold = 0.5f; // Порог расстояния до точки патрулирования
     [SerializeField] private PatrolPath _patrolPath; // Путь патрулирования мыши
+    [SerializeField] private int _startPointIndex = 0; // Индекс начальной точки патрулирования, если используется путь патрулирования
 
     [Header("Component References")]
     [SerializeField] private MouseMover _mover; // Компонент для движения мыши
@@ -19,13 +20,23 @@ public class MouseAI : MonoBehaviour
     [SerializeField] private FieldOfView _fieldOfView; // Компонент для поля зрения мыши (если используется)
 
     private MouseState _currentState;
-    private int _currentPatrolIndex = 0; // Индекс текущей точки патрулирования
+    private int _currentPatrolIndex; // Индекс текущей точки патрулирования
+    private float _waitTimer = 0f; // Таймер для ожидания на текущей точке патрулирования
 
     private void Start()
     {
-        if (_patrolPath.Length > 0)
+        if (_patrolPath is not null && _patrolPath.Length > 1)
         {
-            transform.position = _patrolPath.GetPointTransform(_currentPatrolIndex).position; // Установка начальной позиции на первую точку патрулирования
+            try
+            {
+                transform.position = _patrolPath.GetPoint(_startPointIndex).Position; // Установка начальной позиции мыши
+                _currentPatrolIndex = _startPointIndex;
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                Debug.LogError($"Стартовый индекс {_startPointIndex} некорректен: {ex.Message}. Позиция врага остаётся как в сцене.");
+                return;
+            }
         }
 
         _currentState = MouseState.Patrol;
@@ -71,26 +82,33 @@ public class MouseAI : MonoBehaviour
 
     private void ExecutePatrolState()
     {
-        Vector2 direction = Vector2.zero;
-
-        if (_patrolPath.Length > 1)
+        if (_patrolPath is null || _patrolPath.Length <= 1)
         {
-            Transform targetPoint = _patrolPath.GetPointTransform(_currentPatrolIndex); // Получение текущей точки патрулирования
-
-            if (Vector2.Distance(transform.position, targetPoint.position) < _patrolPointThreshold)
-            {
-                _currentPatrolIndex = (_currentPatrolIndex + 1) % _patrolPath.Length; // Переход к следующей точке патрулирования
-            }
-
-            direction = (targetPoint.position - transform.position).normalized;
+            return;
         }
 
-        if (direction != Vector2.zero)
+        PatrolPoint currentPoint = _patrolPath.GetPoint(_currentPatrolIndex);
+
+        if (_waitTimer > 0f)
         {
-            _mover.SetMoveDirection(direction);
-            _animator.SetDirection(direction);
-            _fieldOfView.SetDirection(direction);
+            _waitTimer -= Time.deltaTime;
+            _mover.SetMoveDirection(Vector2.zero); // Стоим
+            _animator.SetDirection(Vector2.zero);
+            _fieldOfView.SetDirection(Vector2.zero);
+            return;
         }
+
+        if (Vector2.Distance(transform.position, currentPoint.Position) < _patrolPointThreshold)
+        {
+            _waitTimer = currentPoint.WaitTime; // Устанавливаем время ожидания
+            _currentPatrolIndex = (_currentPatrolIndex + 1) % _patrolPath.Length;
+            currentPoint = _patrolPath.GetPoint(_currentPatrolIndex); // Новая цель
+        }
+
+        Vector2 direction = (currentPoint.Position - (Vector2)transform.position).normalized;
+        _mover.SetMoveDirection(direction);
+        _animator.SetDirection(direction);
+        _fieldOfView.SetDirection(direction);
     }
 
     private void ExecuteChaseState()

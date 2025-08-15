@@ -1,74 +1,87 @@
+using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class PatrolPath : MonoBehaviour
 {
-    [Header("Настройки отображения")]
+    [Header("Patrol points")]
+    [SerializeField] private List<PatrolPoint> _points = new List<PatrolPoint>();
+
+    [Header("Visualization")]
     [SerializeField] private Color _pathColor = Color.green;
-    [SerializeField] private float _pointRadius = 0.3f;
     [SerializeField][Range(0f, 2f)] private float _labelOffsetY = 0.5f;
 
-    [Header("Настройки стрелок")]
+    [Header("Arrow settings")]
     [SerializeField] private float _arrowSize = 0.4f;
     [SerializeField][Range(10f, 45f)] private float _arrowAngle = 25f;
 
-    public int Length => transform.childCount;
+    public int Length => _points.Count;
 
-    public Transform GetPointTransform(int index)
+    public PatrolPoint GetPoint(int index)
     {
-        Transform child = transform.GetChild(index);
-
-        if (Length <= index || child is null)
+        if (index < 0 || index >= _points.Count)
         {
-            return transform;
+            Debug.LogError($"[{nameof(PatrolPath)}] Неверный индекс точки: {index}. Всего точек: {Length}");
+            throw new System.ArgumentOutOfRangeException($"[{nameof(PatrolPath)}] Неверный индекс точки: {index}. Всего точек: {Length}");
         }
 
-        return child;
+        return _points[index];
     }
 
 #if UNITY_EDITOR
-    private void OnDrawGizmos()
+    private void OnValidate()
     {
-        if (Length == 0)
+        _points.Clear();
+        foreach (Transform child in transform)
         {
-            return;
-        }
-
-        for (int i = 0; i < Length; i++)
-        {
-            Vector3 currentPoint = GetPointTransform(i).position;
-
-            Gizmos.color = _pathColor;
-            Gizmos.DrawWireSphere(currentPoint, _pointRadius);
-
-            UnityEditor.Handles.color = _pathColor;
-            string pointLabel = i.ToString();
-            Vector3 labelPosition = currentPoint + (Vector3.up * _labelOffsetY);
-            UnityEditor.Handles.Label(labelPosition, pointLabel);
-
-            if (Length > 1)
+            PatrolPoint point = child.GetComponent<PatrolPoint>();
+            if (point is not null)
             {
-                Vector3 nextPoint = GetPointTransform((i + 1) % Length).position;
-                DrawArrow(currentPoint, nextPoint);
+                _points.Add(point);
             }
         }
     }
 
-    private void DrawArrow(Vector3 start, Vector3 end)
+    private void OnDrawGizmos()
     {
-        UnityEditor.Handles.color = _pathColor;
-        UnityEditor.Handles.DrawLine(start, end);
-
-        Vector3 direction = (end - start).normalized;
-        if (direction == Vector3.zero)
-        {
+        if (_points == null || _points.Count == 0)
             return;
+
+        Handles.color = _pathColor;
+
+        for (int i = 0; i < _points.Count; i++)
+        {
+            if (_points[i] == null) continue;
+
+            Vector3 pos = _points[i].transform.position;
+
+            // Порядковый номер под точкой
+            Vector3 labelPos = pos - Vector3.up * _labelOffsetY;
+            Handles.Label(labelPos, i.ToString());
+
+            // Линия и стрелка к следующей точке
+            Vector3 nextPos = _points[(i + 1) % _points.Count].transform.position;
+            Handles.DrawLine(pos, nextPos);
+
+            // Стрелка направления
+            DrawArrow(pos, nextPos);
         }
+    }
 
-        Vector3 rightWing = Quaternion.Euler(0, 0, _arrowAngle) * (-direction);
-        Vector3 leftWing = Quaternion.Euler(0, 0, -_arrowAngle) * (-direction);
+    private void DrawArrow(Vector3 from, Vector3 to)
+    {
+        Vector3 direction = (to - from).normalized;
+        Vector3 middle = Vector3.Lerp(from, to, 0.5f);
 
-        UnityEditor.Handles.DrawLine(end, end + rightWing * _arrowSize);
-        UnityEditor.Handles.DrawLine(end, end + leftWing * _arrowSize);
+        // Основная линия стрелки
+        Handles.DrawLine(middle, middle - direction * _arrowSize);
+
+        // "Крылья" стрелки
+        Vector3 right = Quaternion.LookRotation(Vector3.forward, direction) * Quaternion.Euler(0, 0, _arrowAngle) * Vector3.up;
+        Vector3 left = Quaternion.LookRotation(Vector3.forward, direction) * Quaternion.Euler(0, 0, -_arrowAngle) * Vector3.up;
+
+        Handles.DrawLine(middle, middle - right * _arrowSize);
+        Handles.DrawLine(middle, middle - left * _arrowSize);
     }
 #endif
 }
