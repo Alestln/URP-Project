@@ -21,8 +21,9 @@ public class PatrolPath : MonoBehaviour
     {
         if (index < 0 || index >= _points.Count)
         {
-            Debug.LogError($"[{nameof(PatrolPath)}] Неверный индекс точки: {index}. Всего точек: {Length}");
-            throw new System.ArgumentOutOfRangeException($"[{nameof(PatrolPath)}] Неверный индекс точки: {index}. Всего точек: {Length}");
+            string errorMessage = $"[{nameof(PatrolPath)}] Неверный индекс точки: {index}. Доступные индексы: 0 - {_points.Count - 1}.";
+            Debug.LogError(errorMessage);
+            throw new System.ArgumentOutOfRangeException(errorMessage);
         }
 
         return _points[index];

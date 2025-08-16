@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-[RequireComponent(typeof(MouseMover), typeof(MouseAnimator))]
+[RequireComponent(typeof(MouseMover), typeof(MouseAnimator), typeof(EnemyStats))]
 public class MouseAI : MonoBehaviour
 {
     public enum MouseState
@@ -21,9 +21,26 @@ public class MouseAI : MonoBehaviour
     [SerializeField] private FieldOfView _fieldOfView; // Компонент для поля зрения мыши
     [SerializeField] private PatrolPath _patrolPath; // Путь патрулирования мыши
 
+    [Header("Stats Block")]
+    [SerializeField] private EnemyStats _stats; // Блок статистики мыши, содержащий основные характеристики
+
     private MouseState _currentState;
     private int _currentPatrolIndex; // Индекс текущей точки патрулирования
     private float _waitTimer = 0f; // Таймер для ожидания на текущей точке патрулирования
+
+    private void Awake()
+    {
+        try
+        {
+            _mover.SetSpeed(_stats.MoveSpeed);
+        }
+        catch (ArgumentException ex)
+        {
+            Debug.LogError($"Ошибка инициализации скорости движения: {ex.Message}. Проверьте настройки мыши.");
+            enabled = false; // Отключаем скрипт, если скорость не задана
+            return;
+        }
+    }
 
     private void Start()
     {

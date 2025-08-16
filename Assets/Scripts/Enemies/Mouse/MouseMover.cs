@@ -3,8 +3,7 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class MouseMover : MonoBehaviour
 {
-    [Header("Movement Settings")]
-    [SerializeField] private float _moveSpeed = 3f;
+    private float _moveSpeed = 0f; // —корость движени€ мыши, инициализируетс€ через SetSpeed
 
     private Rigidbody2D _rigidbody;
     private Vector2 _moveDirection;
@@ -21,6 +20,16 @@ public class MouseMover : MonoBehaviour
         Move();
     }
     
+    public void SetSpeed(float speed)
+    {
+        if (speed < 0f)
+        {
+            throw new System.ArgumentException($"Speed must be greater than zero or equal zero. Current speed: {speed}");
+        }
+
+        _moveSpeed = speed;
+    }
+
     public void SetMoveDirection(Vector2 direction)
     {
         _moveDirection = direction.normalized;
