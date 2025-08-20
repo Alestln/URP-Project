@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Stats/New Enemy Stat Block")]
+[CreateAssetMenu(menuName = "Stats/New Stat Block")]
 public class StatBlock : ScriptableObject
 {
     [Header("Core Stats")]

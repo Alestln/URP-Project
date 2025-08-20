@@ -15,6 +15,7 @@ public class DayNightCycle : MonoBehaviour
     [SerializeField]
     private AnimationCurve _lightIntensityCurve;
 
+    [SerializeField]
     private float _currentTime = 0f;
 
     private void Awake()

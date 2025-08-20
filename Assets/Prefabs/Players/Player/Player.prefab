@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 5909034598568178987}
   - component: {fileID: 3232611695443207160}
   - component: {fileID: 7224540002236266257}
+  - component: {fileID: 8480761797605256779}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -198,6 +199,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _walkSpeed: 5
   _runSpeed: 8
+--- !u!114 &8480761797605256779
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658942426264271310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 207ac604e5d9eac4c837c03bfa52e901, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _baseStats: {fileID: 11400000, guid: fdf55238c7f744f44b998fe5c7de8048, type: 2}
+  OnHealthChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnDied:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &6164913365180694799
 GameObject:
   m_ObjectHideFlags: 0
@@ -271,7 +291,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -1411748395
-  m_SortingLayer: 2
+  m_SortingLayer: 3
   m_SortingOrder: 0
   m_Sprite: {fileID: -395507688, guid: b68268e61e2c24b4399650e57dc5eadd, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}

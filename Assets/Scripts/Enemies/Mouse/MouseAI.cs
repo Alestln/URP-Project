@@ -1,7 +1,8 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(MouseMover), typeof(MouseAnimator), typeof(EnemyStats))]
+[RequireComponent(typeof(MouseMover), typeof(CharacterStats))]
 public class MouseAI : MonoBehaviour
 {
     public enum MouseState
@@ -22,23 +23,29 @@ public class MouseAI : MonoBehaviour
     [SerializeField] private PatrolPath _patrolPath; // Путь патрулирования мыши
 
     [Header("Stats Block")]
-    [SerializeField] private EnemyStats _stats; // Блок статистики мыши, содержащий основные характеристики
+    [SerializeField] private CharacterStats _stats; // Блок статистики мыши, содержащий основные характеристики
 
     private MouseState _currentState;
     private int _currentPatrolIndex; // Индекс текущей точки патрулирования
     private float _waitTimer = 0f; // Таймер для ожидания на текущей точке патрулирования
+    private Transform _currentTarget; // Текущая цель мыши, если она есть
+    private readonly List<Transform> _visibleTargetsBuffer = new List<Transform>(); // Буфер для видимых целей
 
     private void Awake()
     {
-        try
+        _mover = GetComponent<MouseMover>();
+        _animator = GetComponentInChildren<MouseAnimator>();
+        _fieldOfView = GetComponentInChildren<FieldOfView>();
+        _stats = GetComponent<CharacterStats>();
+
+        if (_stats != null)
         {
             _mover.SetSpeed(_stats.MoveSpeed);
         }
-        catch (ArgumentException ex)
+        else
         {
-            Debug.LogError($"Ошибка инициализации скорости движения: {ex.Message}. Проверьте настройки мыши.");
-            enabled = false; // Отключаем скрипт, если скорость не задана
-            return;
+            Debug.LogError($"На объекте {gameObject.name} отсутствует компонент CharacterStats!");
+            enabled = false;
         }
     }
 
@@ -73,9 +80,27 @@ public class MouseAI : MonoBehaviour
 
     private void Update()
     {
-        RunFSM(); // Запуск конечного автомата состояний (FSM) для мыши
-        // Здесь можно добавить дополнительные проверки или логику, если нужно
-        // Например, проверка на здоровье, взаимодействие с окружением и т.д.
+        UpdateTarget();
+        RunFSM();
+    }
+
+    private void UpdateTarget()
+    {
+        _fieldOfView.FindVisibleTargets(_visibleTargetsBuffer);
+
+        if (_visibleTargetsBuffer.Count > 0)
+        {
+            // --- ЛОГИКА ВЫБОРА ЦЕЛИ ---
+            // Пока что просто берем первую цель из списка.
+            // В будущем здесь можно будет искать ближайшую, самую слабую и т.д.
+            _currentTarget = _visibleTargetsBuffer[0];
+            SwitchState(MouseState.Chase);
+        }
+        else if(_currentTarget != null)
+        {
+            _currentTarget = null;
+            SwitchState(MouseState.Patrol);
+        }
     }
 
     private void RunFSM()
@@ -83,17 +108,9 @@ public class MouseAI : MonoBehaviour
         switch(_currentState)
         {
             case MouseState.Patrol:
-                if (_fieldOfView.IsTargetVisible())
-                {
-                    SwitchState(MouseState.Chase);
-                }
                 ExecutePatrolState();
                 break;
             case MouseState.Chase:
-                if (!_fieldOfView.IsTargetVisible())
-                {
-                    SwitchState(MouseState.Patrol);
-                }
                 ExecuteChaseState();
                 break;
         }
@@ -101,54 +118,60 @@ public class MouseAI : MonoBehaviour
 
     private void ExecutePatrolState()
     {
-        if (_patrolPath is null || _patrolPath.Length <= 1)
+        if (_patrolPath == null || _patrolPath.Length == 0)
         {
-            return;
-        }
-
-        PatrolPoint currentPoint = _patrolPath.GetPoint(_currentPatrolIndex);
-
-        if (_waitTimer > 0f)
-        {
-            _waitTimer -= Time.deltaTime;
-            _mover.SetMoveDirection(Vector2.zero); // Стоим
+            _mover.SetMoveDirection(Vector2.zero); // Останавливаем движение, если нет пути
             _animator.SetDirection(Vector2.zero);
             _fieldOfView.SetDirection(Vector2.zero);
             return;
         }
 
-        if (Vector2.Distance(transform.position, currentPoint.Position) < _patrolPointThreshold)
+        PatrolPoint currentPoint = _patrolPath.GetPoint(_currentPatrolIndex);
+        Vector2 direction = (currentPoint.Position - (Vector2)transform.position).normalized;
+
+        if (_waitTimer > 0f)
         {
-            _waitTimer = currentPoint.WaitTime; // Устанавливаем время ожидания
-            _currentPatrolIndex = (_currentPatrolIndex + 1) % _patrolPath.Length;
-            currentPoint = _patrolPath.GetPoint(_currentPatrolIndex); // Новая цель
+            _waitTimer -= Time.deltaTime;
+            _mover.SetMoveDirection(Vector2.zero);
+            _animator.SetDirection(direction);
+            _fieldOfView.SetDirection(direction);
+            return;
         }
 
-        Vector2 direction = (currentPoint.Position - (Vector2)transform.position).normalized;
-        _mover.SetMoveDirection(direction);
-        _animator.SetDirection(direction);
-        _fieldOfView.SetDirection(direction);
+        if (Vector2.Distance(transform.position, currentPoint.Position) < _patrolPointThreshold)
+        {
+            _waitTimer = currentPoint.WaitTime;
+            _currentPatrolIndex = (_currentPatrolIndex + 1) % _patrolPath.Length;
+        }
+        else
+        {
+            _mover.SetMoveDirection(direction);
+            _animator.SetDirection(direction);
+            _fieldOfView.SetDirection(direction);
+        }
     }
 
     private void ExecuteChaseState()
     {
-        if (_fieldOfView.Target is null)
+        if (_currentTarget == null)
         {
-            return; // Если цель не задана, ничего не делаем
+            SwitchState(MouseState.Patrol);
+            return; // Если цели нет, возвращаемся к патрулированию
         }
 
-        float distanceToTarget = Vector2.Distance(transform.position, _fieldOfView.Target.position);
-        Vector2 direction = (_fieldOfView.Target.position - transform.position).normalized;
+        float distanceToTarget = Vector2.Distance(transform.position, _currentTarget.position);
+        Vector2 direction = (_currentTarget.position - transform.position).normalized;
+
+        _fieldOfView.SetDirection(direction); // Устанавливаем направление поля зрения
+        _animator.SetDirection(direction); // Устанавливаем направление анимации
 
         if (distanceToTarget > _attackDistance)
         {
-            _mover.SetMoveDirection(direction);
+            _mover.SetMoveDirection(direction); // Двигаемся к цели
         }
         else
         {
-            _mover.SetMoveDirection(Vector2.zero);
+            _mover.SetMoveDirection(Vector2.zero); // Останавливаемся, если цель в пределах атаки
         }
-
-        _animator.SetDirection(direction);
     }
 }
