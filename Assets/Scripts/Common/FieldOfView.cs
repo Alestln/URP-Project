@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class FieldOfView : MonoBehaviour
@@ -9,12 +10,12 @@ public class FieldOfView : MonoBehaviour
     [SerializeField] private float _viewAngle = 90f;
 
     [Header("Параметры обнаружения")]
-    [SerializeField] private Transform _target;
+    [SerializeField] private LayerMask _targetLayerMask;
     [SerializeField] private LayerMask _obstacleLayerMask;
 
     private Vector2 _forwardDirection = Vector2.up;
 
-    public Transform Target => _target;
+    private List<Transform> _visibleTargets = new List<Transform>();
 
     public void SetDirection(Vector2 direction)
     {
@@ -24,35 +25,29 @@ public class FieldOfView : MonoBehaviour
         }
     }
 
-    public bool IsTargetVisible()
+    public void FindVisibleTargets(List<Transform> visibleTargets)
     {
-        if (_target is null)
+        visibleTargets.Clear();
+        _visibleTargets.Clear();
+
+        Collider2D[] targetsInViewRadius = Physics2D.OverlapCircleAll(transform.position, _viewRadius, _targetLayerMask);
+
+        foreach (var targetCollider in targetsInViewRadius)
         {
-            return false;
+            Transform target = targetCollider.transform;
+            Vector2 directionToTarget = (target.position - transform.position).normalized;
+
+            if (Vector2.Angle(_forwardDirection, directionToTarget) < _viewAngle / 2)
+            {
+                float distanceToTarget = Vector2.Distance(transform.position, target.position);
+
+                if (!Physics2D.Raycast(transform.position, directionToTarget, distanceToTarget, _obstacleLayerMask))
+                {
+                    _visibleTargets.Add(target);
+                    visibleTargets.Add(target);
+                }
+            }
         }
-
-        float distanceToTarget = Vector2.Distance(transform.position, _target.position);
-
-        if (distanceToTarget > _viewRadius)
-        {
-            return false;
-        }
-
-        Vector2 directionToTarget = (_target.position - transform.position).normalized;
-
-        if (Vector2.Angle(_forwardDirection, directionToTarget) > _viewAngle / 2)
-        {
-            return false;
-        }
-
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, directionToTarget, distanceToTarget, _obstacleLayerMask);
-
-        if (hit.collider is not null)
-        {
-            return false;
-        }
-
-        return true;
     }
 
 #if UNITY_EDITOR
@@ -67,10 +62,13 @@ public class FieldOfView : MonoBehaviour
         Gizmos.DrawLine(transform.position, transform.position + viewAngleA * _viewRadius);
         Gizmos.DrawLine(transform.position, transform.position + viewAngleB * _viewRadius);
 
-        if (IsTargetVisible())
+        Gizmos.color = Color.red;
+        foreach (var target in _visibleTargets)
         {
-            Gizmos.color = Color.red;
-            Gizmos.DrawLine(transform.position, _target.position);
+            if (target != null)
+            {
+                Gizmos.DrawLine(transform.position, target.position);
+            }
         }
     }
 

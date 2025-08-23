@@ -1,7 +1,8 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(MouseMover), typeof(MouseAnimator), typeof(EnemyStats))]
+[RequireComponent(typeof(MouseMover), typeof(CharacterStats))]
 public class MouseAI : MonoBehaviour
 {
     public enum MouseState
@@ -22,28 +23,26 @@ public class MouseAI : MonoBehaviour
     [SerializeField] private PatrolPath _patrolPath; // Путь патрулирования мыши
 
     [Header("Stats Block")]
-    [SerializeField] private EnemyStats _stats; // Блок статистики мыши, содержащий основные характеристики
+    [SerializeField] private CharacterStats _stats; // Блок статистики мыши, содержащий основные характеристики
 
     private MouseState _currentState;
     private int _currentPatrolIndex; // Индекс текущей точки патрулирования
     private float _waitTimer = 0f; // Таймер для ожидания на текущей точке патрулирования
+    private Transform _currentTarget; // Текущая цель для преследования
+    private readonly List<Transform> _visibleTargetsBuffer = new List<Transform>(); // Список видимых целей
 
     private void Awake()
     {
-        try
-        {
-            _mover.SetSpeed(_stats.MoveSpeed);
-        }
-        catch (ArgumentException ex)
-        {
-            Debug.LogError($"Ошибка инициализации скорости движения: {ex.Message}. Проверьте настройки мыши.");
-            enabled = false; // Отключаем скрипт, если скорость не задана
-            return;
-        }
+        _mover = GetComponent<MouseMover>();
+        _animator = GetComponentInChildren<MouseAnimator>();
+        _fieldOfView = GetComponentInChildren<FieldOfView>();
+        _stats = GetComponent<CharacterStats>();
     }
 
     private void Start()
     {
+        _mover.SetSpeed(_stats.MoveSpeed);
+
         if (_patrolPath is not null && _patrolPath.Length > 1)
         {
             try
@@ -73,9 +72,24 @@ public class MouseAI : MonoBehaviour
 
     private void Update()
     {
-        RunFSM(); // Запуск конечного автомата состояний (FSM) для мыши
-        // Здесь можно добавить дополнительные проверки или логику, если нужно
-        // Например, проверка на здоровье, взаимодействие с окружением и т.д.
+        UpdateTarget();
+        RunFSM();
+    }
+
+    private void UpdateTarget()
+    {
+        _fieldOfView.FindVisibleTargets(_visibleTargetsBuffer);
+
+        if (_visibleTargetsBuffer.Count > 0)
+        {
+            _currentTarget = _visibleTargetsBuffer[0]; // Берём первую видимую цель
+            SwitchState(MouseState.Chase);
+        }
+        else if (_currentTarget != null)
+        {
+            _currentTarget = null;
+            SwitchState(MouseState.Patrol);
+        }
     }
 
     private void RunFSM()
@@ -83,17 +97,9 @@ public class MouseAI : MonoBehaviour
         switch(_currentState)
         {
             case MouseState.Patrol:
-                if (_fieldOfView.IsTargetVisible())
-                {
-                    SwitchState(MouseState.Chase);
-                }
                 ExecutePatrolState();
                 break;
             case MouseState.Chase:
-                if (!_fieldOfView.IsTargetVisible())
-                {
-                    SwitchState(MouseState.Patrol);
-                }
                 ExecuteChaseState();
                 break;
         }
@@ -107,13 +113,14 @@ public class MouseAI : MonoBehaviour
         }
 
         PatrolPoint currentPoint = _patrolPath.GetPoint(_currentPatrolIndex);
+        Vector2 direction = (currentPoint.Position - (Vector2)transform.position).normalized;
 
         if (_waitTimer > 0f)
         {
             _waitTimer -= Time.deltaTime;
             _mover.SetMoveDirection(Vector2.zero); // Стоим
-            _animator.SetDirection(Vector2.zero);
-            _fieldOfView.SetDirection(Vector2.zero);
+            _animator.SetDirection(direction);
+            _fieldOfView.SetDirection(direction);
             return;
         }
 
@@ -124,7 +131,6 @@ public class MouseAI : MonoBehaviour
             currentPoint = _patrolPath.GetPoint(_currentPatrolIndex); // Новая цель
         }
 
-        Vector2 direction = (currentPoint.Position - (Vector2)transform.position).normalized;
         _mover.SetMoveDirection(direction);
         _animator.SetDirection(direction);
         _fieldOfView.SetDirection(direction);
@@ -132,13 +138,14 @@ public class MouseAI : MonoBehaviour
 
     private void ExecuteChaseState()
     {
-        if (_fieldOfView.Target is null)
+        if (_currentTarget == null)
         {
+            SwitchState(MouseState.Patrol);
             return; // Если цель не задана, ничего не делаем
         }
 
-        float distanceToTarget = Vector2.Distance(transform.position, _fieldOfView.Target.position);
-        Vector2 direction = (_fieldOfView.Target.position - transform.position).normalized;
+        float distanceToTarget = Vector2.Distance(transform.position, _currentTarget.position);
+        Vector2 direction = (_currentTarget.position - transform.position).normalized;
 
         if (distanceToTarget > _attackDistance)
         {

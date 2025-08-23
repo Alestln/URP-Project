@@ -22,11 +22,6 @@ public class MouseMover : MonoBehaviour
     
     public void SetSpeed(float speed)
     {
-        if (speed < 0f)
-        {
-            throw new System.ArgumentException($"Speed must be greater than zero or equal zero. Current speed: {speed}");
-        }
-
         _moveSpeed = speed;
     }
 
