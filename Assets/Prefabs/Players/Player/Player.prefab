@@ -15,6 +15,8 @@ GameObject:
   - component: {fileID: 3232611695443207160}
   - component: {fileID: 7224540002236266257}
   - component: {fileID: 8480761797605256779}
+  - component: {fileID: 3628993209787186301}
+  - component: {fileID: 9043979227832561445}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -36,6 +38,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8529433762286614320}
+  - {fileID: 4738239028766159923}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!50 &8962078600687030605
@@ -184,7 +187,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7220fc0145bce341b80ca962e7440d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _playerMover: {fileID: 7224540002236266257}
+  _playerController: {fileID: 3628993209787186301}
 --- !u!114 &7224540002236266257
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -197,8 +200,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58a9504a147578349a2a61c4a8463522, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _walkSpeed: 5
-  _runSpeed: 8
 --- !u!114 &8480761797605256779
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -216,6 +217,40 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   OnDied:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &3628993209787186301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658942426264271310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f67a0c1e9f2b5564f8b9d13f79071d2c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &9043979227832561445
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 658942426264271310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea4948c58bf38db41a483468d40cc99f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _attackPoint: {fileID: 4738239028766159923}
+  _attackRadius: 0.9
+  _attackCooldown: 1
+  _targetLayerMask:
+    serializedVersion: 2
+    m_Bits: 512
+  _animator: {fileID: 4406480812901948467}
+  OnAttack:
     m_PersistentCalls:
       m_Calls: []
 --- !u!1 &6164913365180694799
@@ -338,3 +373,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _playerMover: {fileID: 7224540002236266257}
+--- !u!1 &7713312879641317605
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4738239028766159923}
+  m_Layer: 6
+  m_Name: AttackPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4738239028766159923
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7713312879641317605}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.466, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 247088005517342759}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
