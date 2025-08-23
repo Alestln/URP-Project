@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Rendering.Universal;
 
 public class DayNightCycle : MonoBehaviour
@@ -17,6 +19,14 @@ public class DayNightCycle : MonoBehaviour
 
     [SerializeField]
     private float _currentTime = 0f;
+
+    [Header("Time Thresholds")]
+    [SerializeField][Range(0, 1)] private float _dayStartThreshold = 0.25f; // 6 AM
+    [SerializeField][Range(0, 1)] private float _nightStartThreshold = 0.75f; // 6 PM
+
+    [Header("Events")]
+    public UnityEvent OnDayBegan;
+    public UnityEvent OnNightBegan;
 
     private void Awake()
     {
@@ -43,6 +53,19 @@ public class DayNightCycle : MonoBehaviour
         float cyclePercentage = _currentTime / _cycleDurationSeconds;
 
         UpdateLight(cyclePercentage);
+        CheckTimeState(cyclePercentage);
+    }
+
+    private void CheckTimeState(float percent)
+    {
+        if (percent >= _nightStartThreshold || percent < _dayStartThreshold)
+        {
+            OnNightBegan?.Invoke();
+        }
+        else if (percent >= _dayStartThreshold && percent < _nightStartThreshold)
+        {
+            OnDayBegan?.Invoke();
+        }
     }
 
     private void UpdateLight(float percent)

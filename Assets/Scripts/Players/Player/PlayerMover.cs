@@ -3,16 +3,9 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerMover : MonoBehaviour
 {
-    [Header("Movement Settings")]
-    [SerializeField] private float _walkSpeed = 5f;
-    [SerializeField] private float _runSpeed = 8f;
-
     private Rigidbody2D _rigidBody;
-    private Vector2 _direction;
-    private bool _isRunning;
-    private bool _isMoving;
 
-    public Vector2 MoveDirection => _direction;
+    public Vector2 MoveDirection { get; private set; }
     public float CurrentSpeed => _rigidBody.velocity.magnitude;
 
     private void Awake()
@@ -20,38 +13,15 @@ public class PlayerMover : MonoBehaviour
         _rigidBody = GetComponent<Rigidbody2D>();
     }
 
-    private void FixedUpdate()
+    public void Move(Vector2 direction, float speed)
     {
-        Move();
+        MoveDirection = direction;
+        _rigidBody.velocity = direction * speed;
     }
 
-    public void SetDirection(Vector2 direction)
+    public void Stop()
     {
-        if (direction == Vector2.zero)
-        {
-            _isMoving = false;
-        }
-        else
-        {
-            _direction = direction;
-            _isMoving = true;
-        }
-    }
-
-    public void SetRunning(bool isRunning)
-    {
-        _isRunning = isRunning;
-    }
-
-    private void Move()
-    {
-        if (!_isMoving)
-        {
-            _rigidBody.velocity = Vector2.zero;
-            return;
-        }
-
-        float targetSpeed = _isRunning ? _runSpeed : _walkSpeed;
-        _rigidBody.velocity = _direction * targetSpeed;
+        MoveDirection = Vector2.zero;
+        _rigidBody.velocity = Vector2.zero;
     }
 }

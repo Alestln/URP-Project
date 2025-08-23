@@ -11,6 +11,7 @@ public class CharacterStats : MonoBehaviour
     public int CurrentHealts { get; private set; }
     public int Damage { get; private set; }
     public float MoveSpeed { get; private set; }
+    public float RunSpeed { get; private set; }
     public int Armor { get; private set; }
 
     public UnityEvent<int, int> OnHealthChanged; // —обытие дл€ отслеживани€ изменений здоровь€
@@ -27,6 +28,7 @@ public class CharacterStats : MonoBehaviour
         CurrentHealts = _baseStats.MaxHealth;
         Damage = _baseStats.Damage;
         MoveSpeed = _baseStats.MoveSpeed;
+        RunSpeed = _baseStats.RunSpeed;
         Armor = _baseStats.Armor;
     }
 

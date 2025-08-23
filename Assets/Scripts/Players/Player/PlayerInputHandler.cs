@@ -3,17 +3,26 @@ using UnityEngine.InputSystem;
 
 public class PlayerInputHandler : MonoBehaviour
 {
-    [SerializeField] private PlayerMover _playerMover;
+    [SerializeField] private PlayerController _playerController;
+
+    private PlayerInputData _inputData;
+
+    private void Update()
+    {
+        _playerController.SetInput(_inputData);
+
+        // Важно: сбрасываем "одноразовые" флаги после отправки,
+        // чтобы они не срабатывали каждый кадр.
+        _inputData.AttackPressed = false;
+    }
 
     public void OnMove(InputAction.CallbackContext context)
     {
-        var input = context.ReadValue<Vector2>();
-
-        _playerMover.SetDirection(input);
+        _inputData.MoveDirection = context.ReadValue<Vector2>();
     }
 
     public void OnRun(InputAction.CallbackContext context)
     {
-        _playerMover.SetRunning(context.ReadValueAsButton());
+        _inputData.IsRunning = context.ReadValueAsButton();
     }
 }
