@@ -8,11 +8,13 @@ public class CharacterStats : MonoBehaviour
     [SerializeField] private StatBlock _baseStats; // Базовые характеристики противника
 
     public int MaxHealth { get; private set; }
-    public int CurrentHealts { get; private set; }
+    public int CurrentHealth { get; private set; }
     public int Damage { get; private set; }
     public float MoveSpeed { get; private set; }
     public float RunSpeed { get; private set; }
     public int Armor { get; private set; }
+
+    public bool IsInvincible { get; set; } = false;
 
     public UnityEvent<int, int> OnHealthChanged;
     public UnityEvent OnDied;
@@ -25,7 +27,7 @@ public class CharacterStats : MonoBehaviour
     private void Initialize()
     {
         MaxHealth = _baseStats.MaxHealth;
-        CurrentHealts = _baseStats.MaxHealth;
+        CurrentHealth = _baseStats.MaxHealth;
         Damage = _baseStats.Damage;
         MoveSpeed = _baseStats.MoveSpeed;
         RunSpeed = _baseStats.RunSpeed;
@@ -34,14 +36,18 @@ public class CharacterStats : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
+        if (IsInvincible)
+        {
+            return;
+        }
+
         int damageTaken = Mathf.Max(0, damage - Armor);
+        CurrentHealth = Mathf.Clamp(CurrentHealth - damageTaken , 0, MaxHealth);
 
-        CurrentHealts = Mathf.Clamp(CurrentHealts - damageTaken, MinHealth, MaxHealth);
+        OnHealthChanged?.Invoke(CurrentHealth, MaxHealth);
+        Debug.Log($"{gameObject.name} получил {damageTaken} урона. Осталось здоровья: {CurrentHealth}/{MaxHealth}");
 
-        Debug.Log($"{gameObject.name} took {damageTaken} damage, current health: {CurrentHealts}/{MaxHealth}");
-        OnHealthChanged?.Invoke(CurrentHealts, MaxHealth);
-
-        if (CurrentHealts <= MinHealth)
+        if (CurrentHealth <= 0)
         {
             Die();
         }
@@ -49,8 +55,9 @@ public class CharacterStats : MonoBehaviour
 
     private void Die()
     {
-        OnDied?.Invoke();
+        Debug.Log($"{gameObject.name} умер.");
 
+        OnDied?.Invoke();
         gameObject.SetActive(false);
     }
 }

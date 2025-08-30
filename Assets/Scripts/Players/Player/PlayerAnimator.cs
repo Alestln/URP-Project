@@ -1,9 +1,10 @@
 using UnityEngine;
-public static class PLayerAnimationNames
+public static class PlayerAnimationNames
 {
     public const string DirectionX = "DirectionX";
     public const string DirectionY = "DirectionY";
     public const string Speed = "Speed";
+    public const string Attack = "Attack";
 }
 
 public class PlayerAnimator : MonoBehaviour
@@ -24,8 +25,8 @@ public class PlayerAnimator : MonoBehaviour
 
     private void UpdateAnimation()
     {
-        _animator.SetFloat(PLayerAnimationNames.DirectionX, _playerMover.MoveDirection.x);
-        _animator.SetFloat(PLayerAnimationNames.DirectionY, _playerMover.MoveDirection.y);
-        _animator.SetFloat(PLayerAnimationNames.Speed, _playerMover.CurrentSpeed);
+        _animator.SetFloat(PlayerAnimationNames.DirectionX, _playerMover.MoveDirection.x);
+        _animator.SetFloat(PlayerAnimationNames.DirectionY, _playerMover.MoveDirection.y);
+        _animator.SetFloat(PlayerAnimationNames.Speed, _playerMover.CurrentSpeed);
     }
 }

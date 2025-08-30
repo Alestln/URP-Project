@@ -24,4 +24,12 @@ public class PlayerInputHandler : MonoBehaviour
     {
         _inputData.IsRunning = context.ReadValueAsButton();
     }
+
+    public void OnAttack(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            _inputData.AttackPressed = true;
+        }
+    }
 }

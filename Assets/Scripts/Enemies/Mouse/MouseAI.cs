@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(MouseMover), typeof(CharacterStats))]
+[RequireComponent(typeof(MeleeAttacker))]
 public class MouseAI : MonoBehaviour
 {
     public enum MouseState
@@ -25,11 +26,16 @@ public class MouseAI : MonoBehaviour
     [Header("Stats Block")]
     [SerializeField] private CharacterStats _stats; // Блок статистики мыши, содержащий основные характеристики
 
+    [Header("Combat")]
+    [Tooltip("Контейнер с хитбоксами, который нужно поворачивать.")]
+    [SerializeField] private Transform _hitboxContainer;
+
     private MouseState _currentState;
     private int _currentPatrolIndex; // Индекс текущей точки патрулирования
     private float _waitTimer = 0f; // Таймер для ожидания на текущей точке патрулирования
     private Transform _currentTarget; // Текущая цель для преследования
     private readonly List<Transform> _visibleTargetsBuffer = new List<Transform>(); // Список видимых целей
+    private MeleeAttacker _meleeAttacker;
 
     private void Awake()
     {
@@ -37,6 +43,7 @@ public class MouseAI : MonoBehaviour
         _animator = GetComponentInChildren<MouseAnimator>();
         _fieldOfView = GetComponentInChildren<FieldOfView>();
         _stats = GetComponent<CharacterStats>();
+        _meleeAttacker = GetComponent<MeleeAttacker>();
     }
 
     private void Start()
@@ -154,8 +161,19 @@ public class MouseAI : MonoBehaviour
         else
         {
             _mover.SetMoveDirection(Vector2.zero);
+
+            UpdateHitboxRotation(direction);
+            _meleeAttacker.Attack();
         }
 
         _animator.SetDirection(direction);
+    }
+
+    private void UpdateHitboxRotation(Vector2 direction)
+    {
+        if (direction == Vector2.zero) return;
+
+        float angle = Vector2.SignedAngle(Vector2.up, direction);
+        _hitboxContainer.rotation = Quaternion.Euler(0, 0, angle);
     }
 }
