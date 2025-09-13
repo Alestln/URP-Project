@@ -1,13 +1,18 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace Assets.Scripts.Players.Player
 {
     [RequireComponent(typeof(PlayerMover), typeof(CharacterStats))]
+    [RequireComponent(typeof(MeleeAttacker))]
     public class PlayerController : MonoBehaviour
     {
+        [SerializeField] private Transform _hitboxContainer;
+
         private PlayerMover _mover;
         private CharacterStats _stats;
         private PlayerInputData _inputData;
+        private MeleeAttacker _meleeAttacker;
 
         public bool CanControl { get; set; } = true;
 
@@ -15,6 +20,7 @@ namespace Assets.Scripts.Players.Player
         {
             _mover = GetComponent<PlayerMover>();
             _stats = GetComponent<CharacterStats>();
+            _meleeAttacker = GetComponent<MeleeAttacker>();
         }
 
         private void Update()
@@ -26,6 +32,7 @@ namespace Assets.Scripts.Players.Player
             }
 
             HandleMovement();
+            HandleCombat();
         }
 
         private void HandleMovement()
@@ -33,11 +40,21 @@ namespace Assets.Scripts.Players.Player
             if (_inputData.MoveDirection != Vector2.zero)
             {
                 float targetSpeed = _inputData.IsRunning ? _stats.RunSpeed : _stats.MoveSpeed;
-                _mover.Move(_inputData.MoveDirection, targetSpeed);
+                _mover.Move(_inputData.MoveDirection, targetSpeed); 
             }
             else
             {
                 _mover.Stop();
+            }
+        }
+
+        private void HandleCombat()
+        {
+            if (_inputData.AttackPressed)
+            {
+                TransformHelper.UpdateRotation(_hitboxContainer, _mover.MoveDirection);
+
+                _meleeAttacker.Attack();
             }
         }
 
