@@ -46,7 +46,7 @@ public class MeleeAttacker : MonoBehaviour
         _lastAttackTime = Time.time;
         _animator.SetTrigger(AttackTriggerHash);
 
-        Vector2 boxCenter = _animator.transform.position;
+        Vector2 boxCenter = _hitboxTemplate.transform.position;
         Vector2 boxSize = _hitboxTemplate.size;
         float boxAngle = _hitboxTemplate.transform.eulerAngles.z;
 
